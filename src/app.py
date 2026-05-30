@@ -1,3 +1,4 @@
+from ai_sql import generate_sql
 import sqlite3
 from pathlib import Path
 
@@ -143,25 +144,19 @@ if st.button("Generate Insight"):
     if not user_question.strip():
         st.warning("Please enter a question.")
     else:
-        matched_question = match_question(user_question)
-
-        if matched_question:
-            sql = QUESTION_SQL_MAP[matched_question]
+        try:
+            sql = generate_sql(user_question)
             result = run_query(sql)
 
-            st.subheader("Matched Business Question")
-            st.write(matched_question)
-
-            st.subheader("SQL Query")
+            st.subheader("Generated SQL Query")
             st.code(sql, language="sql")
 
             st.subheader("Query Result")
             st.dataframe(result)
 
             st.subheader("Business Insight")
-            st.write(generate_basic_insight(matched_question, result))
-        else:
-            st.warning(
-                "Sorry, I could not understand this question yet. "
-                "Try asking about default rate, recovery amount, states, or agents."
-            )
+            st.write(generate_basic_insight(user_question, result))
+
+        except Exception as e:
+            st.error("Something went wrong while generating or running the SQL query.")
+            st.write(e)
