@@ -90,6 +90,23 @@ def run_query(query):
     conn.close()
     return df
 
+def show_dynamic_chart(df):
+    if df.empty or len(df.columns) < 2:
+        return
+
+    numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
+    non_numeric_columns = df.select_dtypes(exclude=["number"]).columns.tolist()
+
+    if not numeric_columns or not non_numeric_columns:
+        return
+
+    x_col = non_numeric_columns[0]
+    y_col = numeric_columns[-1]
+
+    st.subheader("Chart View")
+    chart_data = df[[x_col, y_col]].set_index(x_col)
+    st.bar_chart(chart_data)
+
 
 def generate_basic_insight(question, df):
     if df.empty:
@@ -154,6 +171,8 @@ if st.button("Generate Insight"):
 
             st.subheader("Query Result")
             st.dataframe(result)
+            
+            show_dynamic_chart(result)
 
             st.subheader("AI Recommendation")
 
