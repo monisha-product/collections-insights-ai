@@ -1,23 +1,33 @@
 # Collections Insights AI
 
-AI-powered collections analytics assistant that transforms natural language questions into actionable portfolio, recovery, and delinquency insights.
+## Live Demo
+[Streamlit App](YOUR_URL)
 
-## Project Story
+## Problem Statement
 
-Collections and recovery teams often rely on analysts to answer questions about portfolio performance, delinquency trends, recovery rates, and customer risk.
+Collections teams often rely on analysts to answer portfolio and recovery questions.
 
-Collections Insights AI enables business users to ask questions in plain English and receive instant, data-backed insights, visualizations, and recommendations without writing SQL.
+This application allows business users to ask natural-language questions and receive AI-generated insights.
 
-The goal is to democratize access to collections analytics and help teams make faster, data-driven decisions.
+## Features
+
+- Natural Language to SQL
+- Gemini AI Integration
+- Multi-table Collections Database
+- Dynamic Charts
+- AI Business Recommendations
+
+## Data Model
+
+customers
+loans
+repayments
+collections
+collection_agents
+collection_assignments
 
 ## Example Questions
 
-* Which customer segments have the highest delinquency rate?
-* What is the recovery rate for accounts overdue by more than 90 days?
-* Which accounts should be prioritized by collection agents?
-* What are the key drivers of loan default?
-* How has portfolio performance changed over the last 6 months?
-
-## Status
-
-🚧 Planning & Design Phase
+- Which risk segment has the highest default rate?
+- Which agents recovered the highest amount?
+- Which states have the highest defaulted loans?
