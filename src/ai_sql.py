@@ -5,13 +5,17 @@ from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+BUSINESS_CONTEXT_PATH = BASE_DIR / "prompts" / "business_context.txt"
 DB_PATH = BASE_DIR / "data" / "collections.db"
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
+def get_business_context():
+    if BUSINESS_CONTEXT_PATH.exists():
+        return BUSINESS_CONTEXT_PATH.read_text()
+    return ""
 
 def get_schema():
     conn = sqlite3.connect(DB_PATH)
@@ -43,6 +47,7 @@ def get_schema():
 
 def generate_sql(user_question):
     schema = get_schema()
+    business_context = get_business_context()
 
     prompt = f"""
 You are a SQL analyst for a loan collections analytics product.
@@ -56,6 +61,9 @@ Rules:
 - Do not explain the query.
 - Use SQLite syntax.
 - Limit results to 20 rows where appropriate.
+
+Business context:
+{business_context}
 
 Database schema:
 {schema}
