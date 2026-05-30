@@ -1,4 +1,5 @@
 from ai_sql import generate_sql
+from insights import generate_insight
 import sqlite3
 from pathlib import Path
 
@@ -154,8 +155,10 @@ if st.button("Generate Insight"):
             st.subheader("Query Result")
             st.dataframe(result)
 
-            st.subheader("Business Insight")
-            st.write(generate_basic_insight(user_question, result))
+            st.subheader("AI Recommendation")
+
+            ai_insight = generate_insight(user_question, result)
+            st.write(ai_insight)
 
         except Exception as e:
             st.error("Something went wrong while generating or running the SQL query.")
