@@ -1,7 +1,7 @@
 # Collections Insights AI
 
 ## Live Demo
-[Streamlit App](YOUR_URL)
+https://collections-insights-ai-cvznqqxcvtkxdgmyaaz8im.streamlit.app/
 
 ## Problem Statement
 
