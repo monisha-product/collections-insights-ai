@@ -25,6 +25,7 @@ QUESTION_SQL_MAP = {
         GROUP BY c.risk_segment
         ORDER BY default_rate DESC;
     """,
+
     "Which collection stage has recovered the highest amount?": """
         SELECT
             collection_stage,
@@ -34,6 +35,7 @@ QUESTION_SQL_MAP = {
         GROUP BY collection_stage
         ORDER BY total_recovered_amount DESC;
     """,
+
     "Which states have the highest number of defaulted loans?": """
         SELECT
             c.state,
@@ -44,6 +46,7 @@ QUESTION_SQL_MAP = {
         GROUP BY c.state
         ORDER BY defaulted_loans DESC;
     """,
+
     "Which collection agents recovered the highest amount?": """
         SELECT
             ag.agent_name,
@@ -58,6 +61,7 @@ QUESTION_SQL_MAP = {
         ORDER BY total_recovered_amount DESC
         LIMIT 10;
     """,
+
     "Which agents have the highest paid outcome rate?": """
         SELECT
             ag.agent_name,
@@ -93,27 +97,71 @@ def generate_basic_insight(question, df):
     return f"For the question '{question}', the highest value is observed for: {top_row}."
 
 
+def match_question(user_question):
+    user_question_lower = user_question.lower()
+
+    for question in QUESTION_SQL_MAP.keys():
+        question_words = question.lower().replace("?", "").split()
+
+        matched_words = [
+            word for word in question_words
+            if word in user_question_lower and len(word) > 3
+        ]
+
+        if len(matched_words) >= 2:
+            return question
+
+    return None
+
+
 st.set_page_config(page_title="Collections Insights AI", layout="wide")
 
 st.title("Collections Insights AI")
+
 st.write(
-    "Ask business questions about loan collections, recovery, delinquency, and portfolio risk."
+    "Ask business questions about loan collections, recovery, delinquency, "
+    "agent productivity, and portfolio risk."
 )
 
-question = st.selectbox(
-    "Choose a business question",
-    list(QUESTION_SQL_MAP.keys())
+st.markdown("### Example questions")
+st.markdown(
+    """
+- Which risk segment has the highest default rate?
+- Which collection stage has recovered the highest amount?
+- Which states have the highest number of defaulted loans?
+- Which collection agents recovered the highest amount?
+- Which agents have the highest paid outcome rate?
+"""
+)
+
+user_question = st.text_input(
+    "Ask a question about collections data",
+    placeholder="Example: Which agents recovered the most money?"
 )
 
 if st.button("Generate Insight"):
-    sql = QUESTION_SQL_MAP[question]
-    result = run_query(sql)
+    if not user_question.strip():
+        st.warning("Please enter a question.")
+    else:
+        matched_question = match_question(user_question)
 
-    st.subheader("SQL Query")
-    st.code(sql, language="sql")
+        if matched_question:
+            sql = QUESTION_SQL_MAP[matched_question]
+            result = run_query(sql)
 
-    st.subheader("Query Result")
-    st.dataframe(result)
+            st.subheader("Matched Business Question")
+            st.write(matched_question)
 
-    st.subheader("Business Insight")
-    st.write(generate_basic_insight(question, result))
+            st.subheader("SQL Query")
+            st.code(sql, language="sql")
+
+            st.subheader("Query Result")
+            st.dataframe(result)
+
+            st.subheader("Business Insight")
+            st.write(generate_basic_insight(matched_question, result))
+        else:
+            st.warning(
+                "Sorry, I could not understand this question yet. "
+                "Try asking about default rate, recovery amount, states, or agents."
+            )
