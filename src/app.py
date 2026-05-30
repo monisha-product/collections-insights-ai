@@ -135,7 +135,22 @@ def match_question(user_question):
 
 st.set_page_config(page_title="Collections Insights AI", layout="wide")
 
-st.title("Collections Insights AI")
+st.sidebar.title("Suggested Questions")
+
+suggested_questions = [
+    "Which risk segment has the highest default rate?",
+    "Which collection agents recovered the highest amount?",
+    "Which states have the highest number of defaulted loans?",
+    "Which collection stage has recovered the highest amount?",
+    "Which agents have the highest paid outcome rate?",
+    "Which region has the best recovery performance?",
+    "Which loan grades contribute most to defaults?"
+]
+
+selected_question = st.sidebar.radio(
+    "Try one of these:",
+    suggested_questions
+)
 
 st.write(
     "Ask business questions about loan collections, recovery, delinquency, "
@@ -155,7 +170,7 @@ st.markdown(
 
 user_question = st.text_input(
     "Ask a question about collections data",
-    placeholder="Example: Which agents recovered the most money?"
+    value=selected_question
 )
 
 if st.button("Generate Insight"):
