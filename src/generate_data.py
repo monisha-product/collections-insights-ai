@@ -109,6 +109,40 @@ def generate_collections(loans_df):
 
     return pd.DataFrame(data)
 
+def generate_agents(n=25):
+    regions = ["South", "West", "North", "East"]
+    data = []
+
+    for i in range(1, n + 1):
+        data.append({
+            "agent_id": i,
+            "agent_name": f"Agent {i}",
+            "region": random.choice(regions),
+            "experience_years": random.randint(1, 10)
+        })
+
+    return pd.DataFrame(data)
+
+
+def generate_assignments(loans_df, agents_df):
+    data = []
+    assignment_id = 1
+
+    eligible_loans = loans_df[loans_df["loan_status"].isin(["Active", "Defaulted", "Written Off"])]
+
+    for _, loan in eligible_loans.iterrows():
+        agent = agents_df.sample(1).iloc[0]
+
+        data.append({
+            "assignment_id": assignment_id,
+            "loan_id": loan["loan_id"],
+            "agent_id": agent["agent_id"],
+            "assigned_date": datetime(2023, 1, 1) + timedelta(days=random.randint(0, 700))
+        })
+
+        assignment_id += 1
+
+    return pd.DataFrame(data)
 
 def save_to_sqlite():
     DATA_DIR.mkdir(exist_ok=True)
@@ -117,6 +151,8 @@ def save_to_sqlite():
     loans = generate_loans(customers)
     repayments = generate_repayments(loans)
     collections = generate_collections(loans)
+    agents = generate_agents()
+    assignments = generate_assignments(loans, agents)
 
     conn = sqlite3.connect(DB_PATH)
 
@@ -124,6 +160,8 @@ def save_to_sqlite():
     loans.to_sql("loans", conn, if_exists="replace", index=False)
     repayments.to_sql("repayments", conn, if_exists="replace", index=False)
     collections.to_sql("collections", conn, if_exists="replace", index=False)
+    agents.to_sql("collection_agents", conn, if_exists="replace", index=False)
+    assignments.to_sql("collection_assignments", conn, if_exists="replace", index=False)
 
     conn.close()
 
@@ -133,6 +171,8 @@ def save_to_sqlite():
     print(f"Loans: {len(loans)}")
     print(f"Repayments: {len(repayments)}")
     print(f"Collections: {len(collections)}")
+    print(f"Agents: {len(agents)}")
+    print(f"Assignments: {len(assignments)}")
 
 
 if __name__ == "__main__":
