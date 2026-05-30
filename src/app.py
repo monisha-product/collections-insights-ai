@@ -178,7 +178,21 @@ if st.button("Generate Insight"):
         st.warning("Please enter a question.")
     else:
         try:
-            sql = generate_sql(user_question)
+            try:
+                sql = generate_sql(user_question)
+                st.success("SQL generated using Gemini AI.")
+            except Exception:
+                matched_question = match_question(user_question)
+
+                if matched_question:
+                    sql = QUESTION_SQL_MAP[matched_question]
+                    st.info("Gemini quota unavailable. Using predefined query fallback.")
+                else:
+                    st.error(
+                        "Gemini quota is unavailable and no fallback query matched your question. "
+                        "Try one of the suggested questions."
+                    )
+                    st.stop()
             result = run_query(sql)
 
             st.subheader("Generated SQL Query")
