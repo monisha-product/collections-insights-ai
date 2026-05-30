@@ -43,6 +43,37 @@ QUESTION_SQL_MAP = {
         JOIN loans l ON c.customer_id = l.customer_id
         GROUP BY c.state
         ORDER BY defaulted_loans DESC;
+    """,
+    "Which collection agents recovered the highest amount?": """
+        SELECT
+            ag.agent_name,
+            ag.region,
+            ag.experience_years,
+            SUM(col.recovered_amount) AS total_recovered_amount,
+            COUNT(DISTINCT col.collection_id) AS collection_events
+        FROM collection_agents ag
+        JOIN collection_assignments ca ON ag.agent_id = ca.agent_id
+        JOIN collections col ON ca.loan_id = col.loan_id
+        GROUP BY ag.agent_id, ag.agent_name, ag.region, ag.experience_years
+        ORDER BY total_recovered_amount DESC
+        LIMIT 10;
+    """,
+    "Which agents have the highest paid outcome rate?": """
+        SELECT
+            ag.agent_name,
+            ag.region,
+            COUNT(*) AS total_collection_events,
+            SUM(CASE WHEN col.outcome = 'Paid' THEN 1 ELSE 0 END) AS paid_events,
+            ROUND(
+                100.0 * SUM(CASE WHEN col.outcome = 'Paid' THEN 1 ELSE 0 END) / COUNT(*),
+                2
+            ) AS paid_outcome_rate
+        FROM collection_agents ag
+        JOIN collection_assignments ca ON ag.agent_id = ca.agent_id
+        JOIN collections col ON ca.loan_id = col.loan_id
+        GROUP BY ag.agent_id, ag.agent_name, ag.region
+        ORDER BY paid_outcome_rate DESC
+        LIMIT 10;
     """
 }
 
