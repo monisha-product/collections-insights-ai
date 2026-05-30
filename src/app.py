@@ -189,10 +189,21 @@ if st.button("Generate Insight"):
             
             show_dynamic_chart(result)
 
-            st.subheader("AI Insights")
+            try:
+                st.subheader("AI Recommendation")
 
-            ai_insight = generate_insight(user_question, result)
-            st.write(ai_insight)
+                ai_insight = generate_insight(
+                    user_question,
+                    result
+                )
+
+                st.write(ai_insight)
+
+            except Exception:
+                st.info(
+                    "AI recommendations are temporarily unavailable. "
+                    "Query results are still displayed."
+                )
 
         except Exception as e:
             st.error("Something went wrong while generating or running the SQL query.")
