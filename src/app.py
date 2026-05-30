@@ -189,7 +189,7 @@ if st.button("Generate Insight"):
             
             show_dynamic_chart(result)
 
-            st.subheader("AI Recommendation")
+            st.subheader("AI Insights")
 
             ai_insight = generate_insight(user_question, result)
             st.write(ai_insight)
