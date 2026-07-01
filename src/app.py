@@ -80,6 +80,53 @@ QUESTION_SQL_MAP = {
         GROUP BY ag.agent_id, ag.agent_name, ag.region
         ORDER BY paid_outcome_rate DESC
         LIMIT 10;
+    """,
+
+    "Which agents have the highest promise-to-pay conversion rate?": """
+        SELECT
+            ag.agent_name,
+            ag.region,
+            COUNT(ptp.ptp_id) AS total_promises,
+            SUM(CASE WHEN ptp.status = 'Kept' THEN 1 ELSE 0 END) AS kept_promises,
+            ROUND(
+                100.0 * SUM(CASE WHEN ptp.status = 'Kept' THEN 1 ELSE 0 END) / COUNT(ptp.ptp_id),
+                2
+            ) AS ptp_conversion_rate
+        FROM promise_to_pay ptp
+        JOIN collection_agents ag ON ptp.agent_id = ag.agent_id
+        GROUP BY ag.agent_id, ag.agent_name, ag.region
+        HAVING COUNT(ptp.ptp_id) >= 5
+        ORDER BY ptp_conversion_rate DESC
+        LIMIT 10;
+    """,
+
+    "Which collection channel is most effective?": """
+        SELECT
+            channel,
+            COUNT(*) AS total_attempts,
+            SUM(CASE WHEN outcome IN ('Paid', 'Promise to Pay') THEN 1 ELSE 0 END) AS successful_attempts,
+            ROUND(
+                100.0 * SUM(CASE WHEN outcome IN ('Paid', 'Promise to Pay') THEN 1 ELSE 0 END) / COUNT(*),
+                2
+            ) AS success_rate
+        FROM collection_attempts
+        GROUP BY channel
+        ORDER BY success_rate DESC;
+    """,
+
+    "Which region has the highest broken promise rate?": """
+        SELECT
+            ag.region,
+            COUNT(ptp.ptp_id) AS total_promises,
+            SUM(CASE WHEN ptp.status = 'Broken' THEN 1 ELSE 0 END) AS broken_promises,
+            ROUND(
+                100.0 * SUM(CASE WHEN ptp.status = 'Broken' THEN 1 ELSE 0 END) / COUNT(ptp.ptp_id),
+                2
+            ) AS broken_promise_rate
+        FROM promise_to_pay ptp
+        JOIN collection_agents ag ON ptp.agent_id = ag.agent_id
+        GROUP BY ag.region
+        ORDER BY broken_promise_rate DESC;
     """
 }
 
@@ -144,7 +191,10 @@ suggested_questions = [
     "Which collection stage has recovered the highest amount?",
     "Which agents have the highest paid outcome rate?",
     "Which region has the best recovery performance?",
-    "Which loan grades contribute most to defaults?"
+    "Which loan grades contribute most to defaults?",
+    "Which agents have the highest promise-to-pay conversion rate?",
+    "Which collection channel is most effective?",
+    "Which region has the highest broken promise rate?"
 ]
 
 selected_question = st.sidebar.radio(

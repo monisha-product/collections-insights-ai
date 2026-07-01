@@ -26,10 +26,35 @@ collections
 collection_agents
 
 * Collection staff responsible for recovery activities.
+* agent_id links to collection_assignments, collection_attempts, and promise_to_pay.
 
 collection_assignments
 
 * Links agents to loans.
+
+collection_attempts
+
+* Contains every attempt made by a collection agent to contact a customer for a loan.
+* channel can be Phone, WhatsApp, SMS, Email, or Field Visit.
+* outcome can be Connected, No Answer, Promise to Pay, Paid, Refused, Wrong Number, or Callback Requested.
+* Use this table for channel effectiveness, contact success, number of attempts before payment, follow-up behavior, and agent activity.
+
+promise_to_pay
+
+* Contains customer promises to pay after a collection interaction.
+* status can be Kept, Broken, Partial, or Pending.
+* Use this table for PTP conversion, broken promises, partial payments, pending promises, and agent/region PTP effectiveness.
+
+Relationships:
+
+* collection_attempts.loan_id joins loans.loan_id
+* collection_attempts.customer_id joins customers.customer_id
+* collection_attempts.agent_id joins collection_agents.agent_id
+* promise_to_pay.loan_id joins loans.loan_id
+* promise_to_pay.customer_id joins customers.customer_id
+* promise_to_pay.agent_id joins collection_agents.agent_id
+* collection_assignments.loan_id joins loans.loan_id
+* collection_assignments.agent_id joins collection_agents.agent_id
 
 Important Metrics:
 
@@ -45,4 +70,37 @@ Recovered Amount per Assigned Loan
 Delinquency =
 Days Past Due > 0
 
+PTP Conversion Rate =
+Kept Promises / Total Promises
+
+Broken Promise Rate =
+Broken Promises / Total Promises
+
+Channel Success Rate =
+Paid or Promise to Pay Outcomes / Total Attempts
+
+Recommendation Rules:
+
 Always generate business-relevant SQL queries.
+
+Avoid generic recommendations like:
+* conduct a deep dive
+* investigate further
+* review performance
+* monitor closely
+
+Recommendations should be specific, operational, and immediately actionable.
+
+Each recommendation should include:
+* owner
+* action
+* reason based on data
+* timeline
+* expected impact
+
+Prefer recommendations such as:
+* Reassign high-risk accounts to agents with high PTP conversion.
+* Increase WhatsApp follow-ups if WhatsApp has higher success rate.
+* Coach agents with high broken-promise rates.
+* Prioritize loans with repeated no-response attempts.
+* Escalate high-value loans with broken PTPs.
