@@ -137,6 +137,7 @@ def run_query(query):
     conn.close()
     return df
 
+
 def show_dynamic_chart(df):
     if df.empty or len(df.columns) < 2:
         return
@@ -153,14 +154,6 @@ def show_dynamic_chart(df):
     st.subheader("Chart View")
     chart_data = df[[x_col, y_col]].set_index(x_col)
     st.bar_chart(chart_data)
-
-
-def generate_basic_insight(question, df):
-    if df.empty:
-        return "No data found for this question."
-
-    top_row = df.iloc[0].to_dict()
-    return f"For the question '{question}', the highest value is observed for: {top_row}."
 
 
 def match_question(user_question):
@@ -181,6 +174,19 @@ def match_question(user_question):
 
 
 st.set_page_config(page_title="Collections Insights AI", layout="wide")
+
+if "last_question" not in st.session_state:
+    st.session_state.last_question = None
+
+if "last_sql" not in st.session_state:
+    st.session_state.last_sql = None
+
+if "last_result" not in st.session_state:
+    st.session_state.last_result = None
+
+if "last_ai_recommendation" not in st.session_state:
+    st.session_state.last_ai_recommendation = None
+
 
 st.sidebar.title("Suggested Questions")
 
@@ -215,6 +221,9 @@ st.markdown(
 - Which states have the highest number of defaulted loans?
 - Which collection agents recovered the highest amount?
 - Which agents have the highest paid outcome rate?
+- Which agents have the highest promise-to-pay conversion rate?
+- Which collection channel is most effective?
+- Which region has the highest broken promise rate?
 """
 )
 
@@ -243,32 +252,45 @@ if st.button("Generate Insight"):
                         "Try one of the suggested questions."
                     )
                     st.stop()
+
             result = run_query(sql)
 
-            st.subheader("Generated SQL Query")
-            st.code(sql, language="sql")
-
-            st.subheader("Query Result")
-            st.dataframe(result)
-            
-            show_dynamic_chart(result)
-
-            try:
-                st.subheader("AI Recommendation")
-
-                ai_insight = generate_insight(
-                    user_question,
-                    result
-                )
-
-                st.write(ai_insight)
-
-            except Exception:
-                st.info(
-                    "AI recommendations are temporarily unavailable. "
-                    "Query results are still displayed."
-                )
+            st.session_state.last_question = user_question
+            st.session_state.last_sql = sql
+            st.session_state.last_result = result
+            st.session_state.last_ai_recommendation = None
 
         except Exception as e:
             st.error("Something went wrong while generating or running the SQL query.")
             st.write(e)
+
+
+if st.session_state.last_result is not None:
+    st.subheader("Generated SQL Query")
+    st.code(st.session_state.last_sql, language="sql")
+
+    st.subheader("Query Result")
+    st.dataframe(st.session_state.last_result)
+
+    show_dynamic_chart(st.session_state.last_result)
+
+    st.subheader("AI Recommendation")
+
+    if st.button("Generate AI Recommendation"):
+        try:
+            ai_insight = generate_insight(
+                st.session_state.last_question,
+                st.session_state.last_result
+            )
+            st.session_state.last_ai_recommendation = ai_insight
+
+        except Exception:
+            st.info(
+                "AI recommendations are temporarily unavailable. "
+                "Query results are still displayed."
+            )
+
+    if st.session_state.last_ai_recommendation:
+        st.write(st.session_state.last_ai_recommendation)
+    else:
+        st.info("Click 'Generate AI Recommendation' to create an AI recommendation.")
